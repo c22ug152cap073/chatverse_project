@@ -1,7 +1,7 @@
 from django.db import models
 
 class ChatData(models.Model):
-    question = models.TextField()
+    question = models.CharField(max_length=255)
     answer = models.TextField()
 
     def __str__(self):

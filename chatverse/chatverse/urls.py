@@ -3,6 +3,6 @@ from django.urls import path
 from chatbot.views import chat
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', chat),
+ path('admin/', admin.site.urls),
+ path('', chat),
 ]
