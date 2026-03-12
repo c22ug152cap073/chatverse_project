@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ChatVerse</title>
+</head>
+
+<body>
+
+<h1>ChatVerse AI Chatbot</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<input type="text" name="message" placeholder="Ask something">
+
+<button type="submit">Send</button>
+
+</form>
+
+<br>
+
+<h3>Bot Response:</h3>
+<p>{{response}}</p>
+
+</body>
+</html>
