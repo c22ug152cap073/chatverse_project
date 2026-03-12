@@ -9,47 +9,134 @@
 <style>
 
 body{
-background: linear-gradient(135deg,#1e3c72,#2a5298);
+background: radial-gradient(circle at top,#0f2027,#203a43,#2c5364);
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-font-family:Arial;
+font-family:Segoe UI;
+overflow:hidden;
+}
+
+/* floating AI orb */
+
+.ai-orb{
+width:70px;
+height:70px;
+border-radius:50%;
+background:linear-gradient(45deg,#00f2ff,#6a5cff);
+box-shadow:0 0 25px #00f2ff;
+position:absolute;
+top:40px;
+animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(0)}
+50%{transform:translateY(-10px)}
+100%{transform:translateY(0)}
+}
+
+/* main glass container */
+
+.chat-container{
+width:420px;
+height:640px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(20px);
+border-radius:20px;
+box-shadow:0 0 40px rgba(0,0,0,0.4);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+border:1px solid rgba(255,255,255,0.2);
+}
+
+.chat-header{
+text-align:center;
+padding:18px;
+color:white;
+font-size:18px;
+letter-spacing:1px;
+border-bottom:1px solid rgba(255,255,255,0.2);
 }
 
 .chat-box{
-width:400px;
-height:550px;
-background:white;
-border-radius:20px;
-box-shadow:0 10px 40px rgba(0,0,0,0.3);
-padding:20px;
-display:flex;
-flex-direction:column;
+flex:1;
+padding:15px;
+overflow-y:auto;
 }
 
-.messages{
-flex:1;
-overflow:auto;
-}
+/* message bubbles */
 
 .user{
-text-align:right;
+background:linear-gradient(45deg,#6a5cff,#00f2ff);
+color:white;
+padding:10px 14px;
+border-radius:18px;
 margin:10px;
+max-width:70%;
+margin-left:auto;
+box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 
 .bot{
-text-align:left;
+background:rgba(255,255,255,0.15);
+color:white;
+padding:10px 14px;
+border-radius:18px;
 margin:10px;
-color:#2a5298;
+max-width:70%;
+backdrop-filter:blur(10px);
 }
 
-input{
+/* input area */
+
+.chat-input{
+padding:12px;
+border-top:1px solid rgba(255,255,255,0.2);
+}
+
+.chat-input input{
+background:rgba(255,255,255,0.15);
+border:none;
+color:white;
 border-radius:20px;
 }
 
-button{
+.chat-input input::placeholder{
+color:#ddd;
+}
+
+.chat-input button{
 border-radius:20px;
+background:linear-gradient(45deg,#00f2ff,#6a5cff);
+border:none;
+}
+
+/* typing animation */
+
+.typing{
+display:flex;
+gap:4px;
+padding:6px;
+}
+
+.typing span{
+width:6px;
+height:6px;
+background:white;
+border-radius:50%;
+animation:blink 1.4s infinite both;
+}
+
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+
+@keyframes blink{
+0%{opacity:0.2}
+20%{opacity:1}
+100%{opacity:0.2}
 }
 
 </style>
@@ -58,34 +145,113 @@ border-radius:20px;
 
 <body>
 
-<div class="chat-box">
+<div class="ai-orb"></div>
 
-<h4 class="text-center">ChatVerse AI</h4>
+<div class="chat-container">
 
-<div class="messages">
+<div class="chat-header">
+🧠 ChatVerse Neural Assistant
+</div>
 
-{% if response %}
-<div class="bot">🤖 {{response}}</div>
-{% endif %}
+<div class="chat-box" id="chatbox">
+
+{% for chat in history %}
+<div class="user">{{chat.user_message}}</div>
+<div class="bot">🤖 {{chat.bot_response}}</div>
+{% endfor %}
 
 </div>
 
-<form method="post">
+<div class="chat-input input-group">
 
-{% csrf_token %}
+<input type="text" id="message" class="form-control" placeholder="Ask the AI...">
 
-<div class="input-group">
-
-<input type="text" name="message" class="form-control" placeholder="Ask something...">
-
-<button class="btn btn-primary">Send</button>
+<button onclick="sendMessage()" class="btn btn-primary">Send</button>
 
 </div>
 
-</form>
-
 </div>
+
+<script>
+
+function sendMessage(){
+
+let message=document.getElementById("message").value;
+
+if(message.trim()==="") return;
+
+let chatbox=document.getElementById("chatbox");
+
+chatbox.innerHTML += "<div class='user'>"+message+"</div>";
+
+chatbox.innerHTML += "<div class='bot' id='typing'><div class='typing'><span></span><span></span><span></span></div></div>";
+
+fetch("",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/x-www-form-urlencoded",
+"X-CSRFToken":getCookie('csrftoken')
+},
+
+body:"message="+message
+
+})
+
+.then(response=>response.json())
+
+.then(data=>{
+
+document.getElementById("typing").remove();
+
+chatbox.innerHTML += "<div class='bot'>🤖 "+data.response+"</div>";
+
+chatbox.scrollTop = chatbox.scrollHeight;
+
+});
+
+document.getElementById("message").value="";
+
+}
+
+document.getElementById("message").addEventListener("keypress",function(e){
+
+if(e.key==="Enter"){
+sendMessage();
+}
+
+});
+
+function getCookie(name){
+
+let cookieValue=null;
+
+if(document.cookie && document.cookie!==""){
+
+let cookies=document.cookie.split(';');
+
+for(let i=0;i<cookies.length;i++){
+
+let cookie=cookies[i].trim();
+
+if(cookie.substring(0,name.length+1)===name+'='){
+
+cookieValue=decodeURIComponent(cookie.substring(name.length+1));
+
+break;
+
+}
+
+}
+
+}
+
+return cookieValue;
+
+}
+
+</script>
 
 </body>
-
 </html>
