@@ -33,3 +33,15 @@ def preprocess(text):
     lemmas = [token.lemma_ for token in doc]
 
     return " ".join(lemmas)
+
+
+def extract_entities(text):
+
+    doc = nlp(text)
+
+    entities = []
+
+    for ent in doc.ents:
+        entities.append((ent.text, ent.label_))
+
+    return entities
